@@ -1,7 +1,7 @@
 # coding: utf-8
 import sys
 from pathlib import Path
-from typing import List, NamedTuple
+from typing import List, NamedTuple, Optional
 from datetime import datetime
 
 from git import Repo
@@ -25,11 +25,16 @@ def convert_markdown_to_html(text: str) -> str:
     return md.convert(text)
 
 
-def get_lastcommit_date(path: str) -> datetime:
+def get_lastcommit_date(path: str) -> Optional[datetime]:
     repo = Repo('.')
-    latest_commit = repo.iter_commits('--all', max_count=1, paths=path).__next__()
-    latest_committed_date = latest_commit.committed_date
-    return datetime.fromtimestamp(latest_committed_date)
+
+    try:
+        latest_commit = repo.iter_commits('--all', max_count=1, paths=path).__next__()
+        latest_committed_date = latest_commit.committed_date
+        return datetime.fromtimestamp(latest_committed_date)
+    except StopIteration:
+        return None
+
 
 def main():
     target_path = Path(sys.argv[1])
@@ -43,7 +48,7 @@ def main():
             path = str(markdown),
             html_text = convert_markdown_to_html(markdown.read_text()),
             published_at = get_lastcommit_date(markdown)
-        ) for markdown in markdown_files
+        ) for markdown in markdown_files if get_lastcommit_date(markdown)
     ]
 
     for f in documents:
