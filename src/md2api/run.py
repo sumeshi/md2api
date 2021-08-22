@@ -1,5 +1,6 @@
 # coding: utf-8
 import sys
+import json
 from pathlib import Path
 from typing import List, NamedTuple, Optional
 from datetime import datetime
@@ -36,6 +37,16 @@ def get_lastcommit_date(path: str) -> Optional[datetime]:
         return None
 
 
+def create_posts(output_path: Path, documents: List[Document]):
+    posts_path = output_path / Path('posts')
+
+    for document in documents:
+        document_dir_path = posts_path / Path(document.title)
+        document_dir_path.mkdir(parents=True, exist_ok=True)
+
+        document_path = document_dir_path / Path('index.html')
+        document_path.write_text(json.dumps(document._asdict()))
+
 def main():
     target_path = Path(sys.argv[1])
     markdown_files = parse_markdown_filepaths(target_path)
@@ -44,15 +55,14 @@ def main():
 
     documents = [
         Document(
-            title = markdown.name,
+            title = markdown.stem,
             path = str(markdown),
             html_text = convert_markdown_to_html(markdown.read_text()),
-            published_at = get_lastcommit_date(markdown)
+            published_at = get_lastcommit_date(markdown).isoformat()
         ) for markdown in markdown_files if get_lastcommit_date(markdown)
     ]
 
-    for f in documents:
-        print(f)
+    create_posts(output_path=output_path, documents=documents)
 
 
 if __name__ == '__main__':
