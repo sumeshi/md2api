@@ -1,11 +1,18 @@
 # coding: utf-8
 import sys
 from pathlib import Path
-from typing import List
+from typing import List, NamedTuple
 from datetime import datetime
 
 from git import Repo
 from markdown import Markdown
+
+
+class Document(NamedTuple):
+    title: str
+    path: str
+    html_text: str
+    published_at: datetime
 
 
 def parse_markdown_filepaths(path: str) -> List[Path]:
@@ -28,11 +35,20 @@ def main():
     target_path = Path(sys.argv[1])
     markdown_files = parse_markdown_filepaths(target_path)
 
-    for f in markdown_files:
+    output_path = Path('docs')
+
+    documents = [
+        Document(
+            title = markdown.name,
+            path = str(markdown),
+            html_text = convert_markdown_to_html(markdown.read_text()),
+            published_at = get_lastcommit_date(markdown)
+        ) for markdown in markdown_files
+    ]
+
+    for f in documents:
         print(f)
-        print(convert_markdown_to_html(f.read_text()))
-        print(get_lastcommit_date(f))
-        print()
+
 
 if __name__ == '__main__':
     main()
