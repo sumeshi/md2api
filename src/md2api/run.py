@@ -16,6 +16,12 @@ class Document(NamedTuple):
     published_at: datetime
 
 
+class Index(NamedTuple):
+    title: str
+    path: str
+    published_at: datetime
+
+
 def parse_markdown_filepaths(path: str) -> List[Path]:
     root = Path(path)
     return root.glob('**/*.md') if root.is_dir() else [root]
@@ -47,6 +53,21 @@ def create_posts(output_path: Path, documents: List[Document]):
         document_path = document_dir_path / Path('index.html')
         document_path.write_text(json.dumps(document._asdict()))
 
+
+def create_posts_index(output_path: Path, documents: List[Document]):
+    index_path = output_path / Path('posts')
+
+    indices: List[Index] = [
+        Index(
+            title = document.title,
+            path = '/' + str(Path('posts') / document.path / 'index.html'),
+            published_at = document.published_at
+        )for document in documents
+    ]
+    document_path = index_path / Path('index.html')
+    document_path.write_text(json.dumps(sorted([index._asdict() for index in indices], key=lambda i: i.get('published_at'))))
+
+
 def main():
     target_path = Path(sys.argv[1])
     markdown_files = parse_markdown_filepaths(target_path)
@@ -63,7 +84,7 @@ def main():
     ]
 
     create_posts(output_path=output_path, documents=documents)
-
+    create_posts_index(output_path=output_path, documents=documents)
 
 if __name__ == '__main__':
     main()
