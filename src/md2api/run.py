@@ -56,7 +56,7 @@ def main():
     documents = [
         Document(
             title = markdown.stem,
-            path = str(markdown),
+            path = str(markdown.with_suffix('')),
             html_text = convert_markdown_to_html(markdown.read_text()),
             published_at = get_lastcommit_date(markdown).isoformat()
         ) for markdown in markdown_files if get_lastcommit_date(markdown)
