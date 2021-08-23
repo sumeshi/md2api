@@ -1,12 +1,12 @@
 [tool.poetry]
 name = "md2api"
-version = "0.1.1"
+version = "0.1.2"
 description = ""
 authors = ["sumeshi <j15322sn@gmail.com>"]
 license = "MIT"
 
 [tool.poetry.scripts]
-md2api = 'mf2api:main'
+md2api = 'md2api.run:main'
 
 [tool.poetry.dependencies]
 python = "^3.7"
