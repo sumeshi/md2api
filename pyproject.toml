@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "md2api"
-version = "0.1.2"
+version = "0.1.3"
 description = ""
 authors = ["sumeshi <j15322sn@gmail.com>"]
 license = "MIT"
