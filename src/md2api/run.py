@@ -60,7 +60,7 @@ def create_posts_index(output_path: Path, documents: List[Document]):
     indices: List[Index] = [
         Index(
             title = document.title,
-            path = '/' + str(Path('posts') / document.path / 'index.html'),
+            path = '/' + str(Path('posts') / document.path),
             published_at = document.published_at
         )for document in documents
     ]
