@@ -19,6 +19,7 @@ class Document(NamedTuple):
 class Index(NamedTuple):
     title: str
     path: str
+    description: str
     published_at: datetime
 
 
@@ -54,6 +55,21 @@ def create_posts(output_path: Path, documents: list[Document]):
         document_path.write_text(json.dumps(document._asdict()))
 
 
+def extract_description(html_text: str) -> str:
+    h1flag = False
+    description = ''
+    for line in html_text.splitlines():
+        if h1flag:
+            if line.startswith('<p>'):
+                description = line.lstrip('<p>').rstrip('</p>')
+            else:
+                break
+
+        if line.startswith('<h1>'):
+            h1flag = True
+    return description
+
+
 def create_posts_index(output_path: Path, documents: list[Document]):
     index_path = output_path / Path('posts')
 
@@ -61,6 +77,7 @@ def create_posts_index(output_path: Path, documents: list[Document]):
         Index(
             title=document.title,
             path='/' + str(Path('posts') / document.path),
+            description=extract_description(document.html_text),
             published_at=document.published_at
         )for document in documents
     ]
