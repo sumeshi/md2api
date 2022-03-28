@@ -61,9 +61,10 @@ def extract_description(html_text: str) -> str:
     for line in html_text.splitlines():
         if h1flag:
             if line.startswith('<p>'):
-                description = line.lstrip('<p>').rstrip('</p>')
-            else:
-                break
+                nextp = line.lstrip('<p>').rstrip('</p>')
+                if '<' not in nextp and '>' not in nextp:
+                    description = nextp
+            break
 
         if line.startswith('<h1>'):
             h1flag = True
