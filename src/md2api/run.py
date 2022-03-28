@@ -2,7 +2,7 @@
 import sys
 import json
 from pathlib import Path
-from typing import List, NamedTuple, Optional
+from typing import NamedTuple, Optional, Iterable
 from datetime import datetime
 
 from git import Repo
@@ -22,7 +22,7 @@ class Index(NamedTuple):
     published_at: datetime
 
 
-def parse_markdown_filepaths(path: str) -> List[Path]:
+def parse_markdown_filepaths(path: str) -> Iterable[Path]:
     root = Path(path)
     return root.glob('**/*.md') if root.is_dir() else [root]
 
@@ -43,7 +43,7 @@ def get_lastcommit_date(path: str) -> Optional[datetime]:
         return None
 
 
-def create_posts(output_path: Path, documents: List[Document]):
+def create_posts(output_path: Path, documents: list[Document]):
     posts_path = output_path / Path('posts')
 
     for document in documents:
@@ -54,14 +54,14 @@ def create_posts(output_path: Path, documents: List[Document]):
         document_path.write_text(json.dumps(document._asdict()))
 
 
-def create_posts_index(output_path: Path, documents: List[Document]):
+def create_posts_index(output_path: Path, documents: list[Document]):
     index_path = output_path / Path('posts')
 
-    indices: List[Index] = [
+    indices: list[Index] = [
         Index(
-            title = document.title,
-            path = '/' + str(Path('posts') / document.path),
-            published_at = document.published_at
+            title=document.title,
+            path='/' + str(Path('posts') / document.path),
+            published_at=document.published_at
         )for document in documents
     ]
     document_path = index_path / Path('index.html')
@@ -76,15 +76,16 @@ def main():
 
     documents = [
         Document(
-            title = markdown.stem,
-            path = str(markdown.with_suffix('')),
-            html_text = convert_markdown_to_html(markdown.read_text()),
-            published_at = get_lastcommit_date(markdown).isoformat()
+            title=markdown.stem,
+            path=str(markdown.with_suffix('')),
+            html_text=convert_markdown_to_html(markdown.read_text()),
+            published_at=get_lastcommit_date(markdown).isoformat()
         ) for markdown in markdown_files if get_lastcommit_date(markdown)
     ]
 
     create_posts(output_path=output_path, documents=documents)
     create_posts_index(output_path=output_path, documents=documents)
+
 
 if __name__ == '__main__':
     main()

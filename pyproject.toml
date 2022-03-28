@@ -1,15 +1,15 @@
 [tool.poetry]
 name = "md2api"
-version = "0.1.3"
+version = "0.1.4"
 description = ""
-authors = ["sumeshi <j15322sn@gmail.com>"]
+authors = ["sumeshi <sum3sh1@protonmail.com>"]
 license = "MIT"
 
 [tool.poetry.scripts]
 md2api = 'md2api.run:main'
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.9"
 markdown = "^3.3.4"
 GitPython = "^3.1.20"
 
