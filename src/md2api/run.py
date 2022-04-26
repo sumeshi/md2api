@@ -29,7 +29,7 @@ def parse_markdown_filepaths(path: str) -> Iterable[Path]:
 
 
 def convert_markdown_to_html(text: str) -> str:
-    md = Markdown()
+    md = Markdown(extensions=['tables', 'fenced_code'])
     return md.convert(text)
 
 
