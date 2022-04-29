@@ -50,7 +50,7 @@ def create_posts(output_path: Path, documents: list[Document]):
     posts_path = output_path / Path('posts')
 
     for document in documents:
-        document_dir_path = posts_path / Path(document.title)
+        document_dir_path = posts_path / document.path
         document_dir_path.mkdir(parents=True, exist_ok=True)
 
         document_path = document_dir_path / Path('index.html')
