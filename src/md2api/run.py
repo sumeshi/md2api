@@ -11,6 +11,7 @@ from markdown import Markdown
 
 class Document(NamedTuple):
     title: str
+    heading: str
     path: str
     html_text: str
     published_at: datetime
@@ -18,6 +19,7 @@ class Document(NamedTuple):
 
 class Index(NamedTuple):
     title: str
+    heading: str
     path: str
     description: str
     published_at: datetime
@@ -55,6 +57,16 @@ def create_posts(output_path: Path, documents: list[Document]):
         document_path.write_text(json.dumps(document._asdict()))
 
 
+def extract_title(markdown_text: str) -> str:
+    title = ''
+    for line in markdown_text.splitlines():
+        if line.startswith('# '):
+            title = line.lstrip('#').strip()
+            break
+
+    return title
+
+
 def extract_description(html_text: str) -> str:
     h1flag = False
     description = ''
@@ -77,6 +89,7 @@ def create_posts_index(output_path: Path, documents: list[Document]):
     indices: list[Index] = [
         Index(
             title=document.title,
+            heading=document.heading,
             path='/' + str(Path('posts') / document.path),
             description=extract_description(document.html_text),
             published_at=document.published_at
@@ -95,6 +108,7 @@ def main():
     documents = [
         Document(
             title=markdown.stem,
+            heading=extract_title(markdown.read_text()),
             path=str(markdown.with_suffix('')),
             html_text=convert_markdown_to_html(markdown.read_text()),
             published_at=get_lastcommit_date(markdown).isoformat()
