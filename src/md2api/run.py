@@ -100,7 +100,7 @@ def create_posts_index(output_path: Path, documents: list[Document]):
     document_path.write_text(json.dumps(sorted([index._asdict() for index in indices], key=lambda i: i.get('published_at'))))
 
 
-def create_sitemap_xml(output_path: Path, site_url: str, pages: list[Document]) -> str:
+def create_sitemap_xml(output_path: Path, site_url: str, post_dir: str, pages: list[Document]) -> str:
     urlset = ElementTree.Element('urlset')
     urlset.set("xmlns", "http://www.sitemaps.org/schemas/sitemap/0.9")
     tree = ElementTree.ElementTree(element=urlset)
@@ -117,7 +117,7 @@ def create_sitemap_xml(output_path: Path, site_url: str, pages: list[Document]) 
     for page in pages:
         url_element = ElementTree.SubElement(urlset, 'url')
         loc = ElementTree.SubElement(url_element, 'loc')
-        loc.text = f"{site_url}{'/' if page.path else ''}{page.path}"
+        loc.text = f"{site_url}{f'/{post_dir}/' if page.path else ''}{page.path}"
 
         if page.published_at:
             lastmod = ElementTree.SubElement(url_element, 'lastmod')
@@ -130,6 +130,7 @@ def create_sitemap_xml(output_path: Path, site_url: str, pages: list[Document]) 
 def main():
     target_path = Path(sys.argv[1])
     site_url = sys.argv[2].rstrip('/')
+    post_dir = sys.argv[3]
     markdown_files = parse_markdown_filepaths(target_path)
 
     output_path = Path('docs')
@@ -146,7 +147,7 @@ def main():
 
     create_posts(output_path=output_path, documents=documents)
     create_posts_index(output_path=output_path, documents=documents)
-    create_sitemap_xml(output_path=output_path, site_url=site_url, pages=documents)
+    create_sitemap_xml(output_path=output_path, site_url=site_url, post_dir=post_dir, pages=documents)
 
 
 if __name__ == '__main__':
