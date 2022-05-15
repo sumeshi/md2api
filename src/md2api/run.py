@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 from typing import NamedTuple, Optional, Iterable
 from datetime import datetime
+from xml.etree import ElementTree
 
 from git import Repo
 from markdown import Markdown
@@ -99,8 +100,36 @@ def create_posts_index(output_path: Path, documents: list[Document]):
     document_path.write_text(json.dumps(sorted([index._asdict() for index in indices], key=lambda i: i.get('published_at'))))
 
 
+def create_sitemap_xml(output_path: Path, site_url: str, pages: list[Document]) -> str:
+    urlset = ElementTree.Element('urlset')
+    urlset.set("xmlns", "http://www.sitemaps.org/schemas/sitemap/0.9")
+    tree = ElementTree.ElementTree(element=urlset)
+
+    # for top-page
+    pages.append(Document(
+        title=None,
+        heading=None,
+        path='',
+        html_text=None,
+        published_at=None
+    ))
+
+    for page in pages:
+        url_element = ElementTree.SubElement(urlset, 'url')
+        loc = ElementTree.SubElement(url_element, 'loc')
+        loc.text = f"{site_url}{'/' if page.path else ''}{page.path}"
+
+        if page.published_at:
+            lastmod = ElementTree.SubElement(url_element, 'lastmod')
+            lastmod.text = page.published_at
+    
+    sitemap_path = output_path / Path('sitemap.xml')
+    tree.write(sitemap_path, encoding='utf-8', xml_declaration=True)
+
+
 def main():
     target_path = Path(sys.argv[1])
+    site_url = sys.argv[2].rstrip('/')
     markdown_files = parse_markdown_filepaths(target_path)
 
     output_path = Path('docs')
@@ -117,6 +146,7 @@ def main():
 
     create_posts(output_path=output_path, documents=documents)
     create_posts_index(output_path=output_path, documents=documents)
+    create_sitemap_xml(output_path=output_path, site_url=site_url, pages=documents)
 
 
 if __name__ == '__main__':
