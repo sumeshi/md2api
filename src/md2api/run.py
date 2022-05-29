@@ -42,7 +42,7 @@ def get_lastcommit_date(path: str) -> Optional[datetime]:
     try:
         latest_commit = repo.iter_commits('--all', max_count=1, paths=path).__next__()
         latest_committed_date = latest_commit.committed_date
-        return datetime.fromtimestamp(latest_committed_date)
+        return datetime.fromtimestamp(latest_committed_date).isoformat().split('T')[0]
     except StopIteration:
         return None
 
@@ -141,7 +141,7 @@ def main():
             heading=extract_title(markdown.read_text()),
             path=str(markdown.with_suffix('')),
             html_text=convert_markdown_to_html(markdown.read_text()),
-            published_at=get_lastcommit_date(markdown).isoformat()
+            published_at=get_lastcommit_date(markdown)
         ) for markdown in markdown_files if get_lastcommit_date(markdown)
     ]
 
