@@ -99,6 +99,41 @@ def create_posts_index(output_path: Path, documents: list[Document]):
     document_path = index_path / Path('index.html')
     document_path.write_text(json.dumps(sorted([index._asdict() for index in indices], key=lambda i: i.get('published_at'))))
 
+def create_category_index(output_path: Path, documents: list[Document]):
+    index_path = output_path / Path('posts')
+
+    indices: list[Index] = [
+        Index(
+            title=document.title,
+            heading=document.heading,
+            path='/' + str(Path('posts') / document.path),
+            description=extract_description(document.html_text),
+            published_at=document.published_at
+        )for document in documents
+    ]
+
+    category_names = dict()
+
+    for document in documents:
+        category_name = document.path.split('/')[0]
+        postIndex = Index(
+            title=document.title,
+            heading=document.heading,
+            path='/' + str(Path('posts') / document.path),
+            description=extract_description(document.html_text),
+            published_at=document.published_at
+        )
+
+        if category_name not in category_names.keys():
+            category_names[category_name] = [postIndex]
+        else: 
+            category_names[category_name] = category_names[category_name].append(postIndex)
+    
+    for category, posts in category_names.items():
+        document_path = index_path / Path(category) / Path('index.html')
+        document_path.write_text(json.dumps(sorted([post._asdict() for post in posts], key=lambda i: i.get('published_at'))))
+        # print(json.dumps(sorted([index._asdict() for category_name in category_names], key=lambda i: i.get('published_at'))))
+
 
 def create_sitemap_xml(output_path: Path, site_url: str, post_dir: str, pages: list[Document]) -> str:
     urlset = ElementTree.Element('urlset')
@@ -147,6 +182,7 @@ def main():
 
     create_posts(output_path=output_path, documents=documents)
     create_posts_index(output_path=output_path, documents=documents)
+    create_category_index(output_path=output_path, documents=documents)
     create_sitemap_xml(output_path=output_path, site_url=site_url, post_dir=post_dir, pages=documents)
 
 
