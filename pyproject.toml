@@ -9,9 +9,9 @@ license = "MIT"
 md2api = 'md2api.run:main'
 
 [tool.poetry.dependencies]
-python = "^3.9"
-markdown = "^3.3.4"
-GitPython = "^3.1.20"
+python = "^3.11"
+markdown = "^3.6"
+GitPython = "^3.1.43"
 
 [tool.poetry.dev-dependencies]
 
