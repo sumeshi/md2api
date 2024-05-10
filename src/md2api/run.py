@@ -124,10 +124,10 @@ def create_category_index(output_path: Path, documents: list[Document]):
             published_at=document.published_at
         )
 
-        if category_name not in category_names.keys():
-            category_names[category_name] = [postIndex]
+        if category_name in category_names.keys():
+            category_names[category_name].append(postIndex)
         else: 
-            category_names[category_name] = category_names[category_name].append(postIndex)
+            category_names[category_name] = [postIndex]
     
     for category, posts in category_names.items():
         document_path = index_path / Path(category) / Path('index.html')
