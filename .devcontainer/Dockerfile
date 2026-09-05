@@ -1,4 +1,6 @@
-FROM python:3.11.0-bullseye
+FROM python:3.11-bookworm
+
+COPY --from=ghcr.io/astral-sh/uv:0.10.4 /uv /uvx /bin/
 
 RUN apt -y update && apt upgrade -qqy && apt -y install \
     curl \
@@ -7,4 +9,3 @@ RUN apt -y update && apt upgrade -qqy && apt -y install \
     fish
 
 RUN chsh -s /usr/bin/fish
-RUN pip install -U pip && pip install poetry

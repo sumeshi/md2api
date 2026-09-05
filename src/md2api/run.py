@@ -1,6 +1,7 @@
 # coding: utf-8
 import sys
 import json
+import re
 from pathlib import Path
 from typing import NamedTuple, Optional, Iterable
 from datetime import datetime
@@ -8,6 +9,9 @@ from xml.etree import ElementTree
 
 from git import Repo
 from markdown import Markdown
+
+
+DEL_TAG_PATTERN = re.compile(r'</?del\b[^>]*>', flags=re.IGNORECASE)
 
 
 class Document(NamedTuple):
@@ -33,7 +37,7 @@ def parse_markdown_filepaths(path: str) -> Iterable[Path]:
 
 def convert_markdown_to_html(text: str) -> str:
     md = Markdown(extensions=['tables', 'fenced_code'])
-    return md.convert(text)
+    return DEL_TAG_PATTERN.sub('', md.convert(text))
 
 
 def get_lastcommit_date(path: str) -> Optional[datetime]:
