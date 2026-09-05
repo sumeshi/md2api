@@ -22,6 +22,6 @@ Configure a PyPI trusted publisher for the `sumeshi/md2api` repository, the
 matches the version in `pyproject.toml`:
 
 ```console
-$ git tag v0.6.0
-$ git push origin v0.6.0
+$ git tag v0.6.1
+$ git push origin v0.6.1
 ```

@@ -1,6 +1,6 @@
 [project]
 name = "md2api"
-version = "0.6.0"
+version = "0.6.1"
 description = ""
 authors = [
     { name = "sumeshi", email = "sum3sh1@protonmail.com" },
@@ -11,6 +11,7 @@ requires-python = ">=3.11"
 dependencies = [
     "gitpython>=3.1.43,<4",
     "markdown>=3.6,<4",
+    "pymdown-extensions>=10,<11",
 ]
 
 [project.scripts]
