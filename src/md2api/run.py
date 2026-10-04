@@ -3,7 +3,7 @@ import sys
 import json
 from pathlib import Path
 from typing import NamedTuple, Optional, Iterable
-from datetime import datetime
+from datetime import datetime, timezone
 from xml.etree import ElementTree
 
 from git import Repo
@@ -11,11 +11,11 @@ from markdown import Markdown
 
 
 class Document(NamedTuple):
-    title: str
-    heading: str
+    title: Optional[str]
+    heading: Optional[str]
     path: str
-    html_text: str
-    published_at: datetime
+    html_text: Optional[str]
+    published_at: Optional[str]
 
 
 class Index(NamedTuple):
@@ -23,7 +23,7 @@ class Index(NamedTuple):
     heading: str
     path: str
     description: str
-    published_at: datetime
+    published_at: Optional[str]
 
 
 def parse_markdown_filepaths(path: str) -> Iterable[Path]:
@@ -36,15 +36,21 @@ def convert_markdown_to_html(text: str) -> str:
     return md.convert(text)
 
 
-def get_lastcommit_date(path: str) -> Optional[datetime]:
+def get_lastcommit_date(path: str) -> Optional[str]:
     repo = Repo('.')
 
     try:
-        latest_commit = repo.iter_commits('--all', max_count=1, paths=path).__next__()
-        latest_committed_date = latest_commit.committed_date
-        return datetime.fromtimestamp(latest_committed_date).isoformat().split('T')[0]
+        latest_commit = next(repo.iter_commits('--all', max_count=1, paths=path))
+        return latest_commit.committed_datetime.isoformat()
     except StopIteration:
         return None
+
+
+def parse_iso_datetime(dt_str: Optional[str]) -> datetime:
+    """Parse ISO format datetime string for sorting."""
+    if dt_str is None:
+        return datetime.min.replace(tzinfo=timezone.utc)
+    return datetime.fromisoformat(dt_str)
 
 
 def create_posts(output_path: Path, documents: list[Document]):
@@ -97,21 +103,11 @@ def create_posts_index(output_path: Path, documents: list[Document]):
         )for document in documents
     ]
     document_path = index_path / Path('index.html')
-    document_path.write_text(json.dumps(sorted([index._asdict() for index in indices], key=lambda i: i.get('published_at'))))
+    document_path.write_text(json.dumps(sorted([index._asdict() for index in indices], key=lambda i: parse_iso_datetime(i.get('published_at')))))
+
 
 def create_category_index(output_path: Path, documents: list[Document]):
     index_path = output_path / Path('posts')
-
-    indices: list[Index] = [
-        Index(
-            title=document.title,
-            heading=document.heading,
-            path='/' + str(Path('posts') / document.path),
-            description=extract_description(document.html_text),
-            published_at=document.published_at
-        )for document in documents
-    ]
-
     category_names = dict()
 
     for document in documents:
@@ -131,8 +127,7 @@ def create_category_index(output_path: Path, documents: list[Document]):
     
     for category, posts in category_names.items():
         document_path = index_path / Path(category) / Path('index.html')
-        document_path.write_text(json.dumps(sorted([post._asdict() for post in posts], key=lambda i: i.get('published_at'))))
-        # print(json.dumps(sorted([index._asdict() for category_name in category_names], key=lambda i: i.get('published_at'))))
+        document_path.write_text(json.dumps(sorted([post._asdict() for post in posts], key=lambda i: parse_iso_datetime(i.get('published_at')))))
 
 
 def create_sitemap_xml(output_path: Path, site_url: str, post_dir: str, pages: list[Document]) -> str:
@@ -170,15 +165,24 @@ def main():
 
     output_path = Path('docs')
 
-    documents = [
-        Document(
-            title=markdown.stem,
-            heading=extract_title(markdown.read_text()),
-            path=str(markdown.with_suffix('')),
-            html_text=convert_markdown_to_html(markdown.read_text()),
-            published_at=get_lastcommit_date(markdown)
-        ) for markdown in markdown_files if get_lastcommit_date(markdown)
-    ]
+    documents = []
+
+    for markdown in markdown_files:
+        published_at = get_lastcommit_date(markdown)
+        if published_at is None:
+            continue
+
+        markdown_text = markdown.read_text()
+
+        documents.append(
+            Document(
+                title=markdown.stem,
+                heading=extract_title(markdown_text),
+                path=str(markdown.with_suffix('')),
+                html_text=convert_markdown_to_html(markdown_text),
+                published_at=published_at,
+            )
+        )
 
     create_posts(output_path=output_path, documents=documents)
     create_posts_index(output_path=output_path, documents=documents)
